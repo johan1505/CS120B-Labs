@@ -13,7 +13,7 @@ PORTC = cntavail;).*/
 
 int main(void)
 {
-   DDRA = 0x00; PORTA = 0xFF; // Configure port A's 8 pins as inputs
+   DDRA = 0x00; PORTA = 0x06; // Configure port A's 8 pins as inputs
    DDRC = 0xFF; PORTC = 0x00; // Configure port C's 8 pins as outputs, initialize to 0s
    unsigned char tmpAx = 0x00; // Temporary variable to hold the value of A0
    //unsigned char tmpA1 = 0x00; // Temporary variable to hold the value of A1
@@ -32,4 +32,6 @@ int main(void)
 	   
 	   PORTC = cntavail;
    }
+   
+   return 0;
 }
