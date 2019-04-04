@@ -16,9 +16,6 @@ int main(void)
    DDRA = 0x00; PORTA = 0x06; // Configure port A's 8 pins as inputs
    DDRC = 0xFF; PORTC = 0x00; // Configure port C's 8 pins as outputs, initialize to 0s
    unsigned char tmpAx = 0x00; // Temporary variable to hold the value of A0
-   //unsigned char tmpA1 = 0x00; // Temporary variable to hold the value of A1
-   //unsigned char tmpA2 = 0x00; // Temporary variable to hold the value of A2
-   //unsigned char tmpA3 = 0x00; // Temporary variable to hold the value of A3
    unsigned char cntavail;
    while (1)
    {
