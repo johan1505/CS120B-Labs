@@ -27,7 +27,7 @@ int main(void)
 	    // read inputs
 	    tmpA = PINA;
 	    tmpB = PINB;
-		tmpC = PINC;		
+		tmpC = PINC;
 		
 		totalWeight = tmpA + tmpB + tmpC; // Use it to approximate the weight.
 	    
@@ -39,7 +39,7 @@ int main(void)
 	    }
 		
 		//PINC RANDOMLY CHANGES??
-		
+		//Testing Github 
 		totalWeight = totalWeight << 2;
 	    PORTD = totalWeight | tmpD;
     }
