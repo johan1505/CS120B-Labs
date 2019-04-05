@@ -27,6 +27,7 @@ int main(void)
 		if (cntavail == 0x00){
 			cntavail = cntavail | 0x80;
 		}
+		
 		PORTC = cntavail;
 	}
 	
