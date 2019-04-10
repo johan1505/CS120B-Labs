@@ -1,9 +1,11 @@
-/*
- * jgzum022_lab3_part4.c
- *
- * Created: 4/8/2019 5:45:58 PM
- * Author : joan1
- */ 
+/*	Partner 1 Name & E-mail: Johan Guzman Avalos - jguzm022@ucr.edu
+ *	Partner 2 Name & E-mail: Adrian De La Torre  - adel037@ucr.edu
+ *	Lab Section: 25
+ *	Assignment: Lab 3  Exercise 4 
+ *	
+ *	I acknowledge all content contained herein, excluding template or example
+ *	code, is my own original work.
+ */
 
 #include <avr/io.h>
 
