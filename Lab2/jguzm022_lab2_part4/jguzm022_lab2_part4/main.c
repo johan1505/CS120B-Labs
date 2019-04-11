@@ -31,7 +31,7 @@ int main(void)
 	    tmpA = PINA;
 	    tmpB = PINB;
 		tmpC = PINC;
-		
+				
 		totalWeight = tmpA + tmpB + tmpC; // Use it to approximate the weight.
 	    
 	    if ( totalWeight > 0x8C ){ // If total weight > 140 - cart exceeds max weight
@@ -56,4 +56,3 @@ int main(void)
 	    PORTD = tmpD;
     }
 }
-
