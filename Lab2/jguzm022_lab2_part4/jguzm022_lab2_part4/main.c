@@ -22,7 +22,7 @@ int main(void)
     unsigned char tmpB = 0x00;
     unsigned char tmpC = 0x00;
     unsigned char tmpD = 0x00;
-	unsigned char totalWeight = 0x00;
+	unsigned short totalWeight = 0x00;
     
     while (1)
     {
@@ -34,7 +34,7 @@ int main(void)
 		
 		totalWeight = tmpA + tmpB + tmpC; // Use it to approximate the weight.
 	    
-	    if ( (tmpA + tmpB + tmpC) > 0x8C ){ // If total weight > 140 - cart exceeds max weight
+	    if ( totalWeight > 0x8C ){ // If total weight > 140 - cart exceeds max weight
 		    tmpD = tmpD | 0x01;
 	    }
 	    if ( abs(tmpA - tmpC) > 0x50 ){		// If  |Weight A - Weight C| > 80 -  cart is not balanced
@@ -43,8 +43,17 @@ int main(void)
 		
 		//PINC RANDOMLY CHANGES??
 		//Testing Github 
-		totalWeight = totalWeight << 2;
-	    PORTD = totalWeight | tmpD;
+		if (totalWeight >= 0 && totalWeight < 255){
+			tmpD = tmpD | 0x04; // set the bit 2 to 1; 
+		}
+		else if (totalWeight > 255 && totalWeight < 510){
+			tmpD = tmpD | 0x08; // set the bit 4 to 1; 
+		}
+		else {
+			tmpD = tmpD | 0x10; // set the bit 5 to 1;
+		}
+		
+	    PORTD = tmpD;
     }
 }
 
