@@ -7,7 +7,7 @@
 
 #include <avr/io.h>
 
-enum DLS_States { DLS_SMStart, WAITN, WAITY, UNLOCK } DLS_State;
+enum DLS_States { DLS_SMStart, LOCK_WAITN, PRESSN, WAITY, UNLOCK } DLS_State;
 
 void TickFct_Latch()
 {
@@ -18,21 +18,30 @@ void TickFct_Latch()
 
     switch(DLS_State) {   // Transitions
         case DLS_SMStart:  // Initial transition
-			DLS_State = WAITN;
+			DLS_State = LOCK_WAITN;
 			break;
 
-        case WAITN:
+        case LOCK_WAITN:
 			if (tempN && !tempY && !tempX && !tempA7) {
-    			DLS_State = WAITY;
-			}
-			else if (tempA7 && !tempN && !tempY && !tempX) {
-    			DLS_State = WAITN;
+    			DLS_State = PRESSN;
 			}
 			else {
-    			DLS_State = WAITN;
+    			DLS_State = LOCK_WAITN;
 			}
 			break;
 
+		case PRESSN:
+			if (tempN && !tempY && !tempX && !tempA7){
+				DLS_State = PRESSN;
+			}
+			else if(!tempN && !tempY && !tempX && !tempA7){
+				DLS_State = WAITY;
+			}
+			else {
+				DLS_State = LOCK_WAITN;
+			}
+			break;
+			
         case WAITY:
 			if (!tempN && tempY && !tempX && !tempA7) {
     			DLS_State = UNLOCK;
@@ -41,16 +50,16 @@ void TickFct_Latch()
 				DLS_State = WAITY;
 			}
 			else if (tempA7 && !tempN && !tempY && !tempX) {
-    			DLS_State = WAITN;
+    			DLS_State = LOCK_WAITN;
 			}
 			else {
-    			DLS_State = WAITN;
+    			DLS_State = LOCK_WAITN;
 			}
 			break;
         
         case UNLOCK:
 			if (tempA7 && !tempN && !tempY && !tempX){
-		        DLS_State = WAITN;
+		        DLS_State = LOCK_WAITN;
 			}
 			else {
 				DLS_State = UNLOCK;
@@ -67,9 +76,13 @@ void TickFct_Latch()
 			PORTC = DLS_SMStart;
 			break;
 
-        case WAITN:
+        case LOCK_WAITN:
 			PORTB = 0x00;
-			PORTC = WAITN;
+			PORTC = LOCK_WAITN;
+			break;
+		
+		case PRESSN:
+			PORTC = PRESSN;
 			break;
         
         case WAITY:
