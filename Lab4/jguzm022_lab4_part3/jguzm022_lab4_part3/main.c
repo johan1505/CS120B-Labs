@@ -15,7 +15,7 @@ void TickFct_Latch()
      unsigned char tempY  = PINA & 0x02;
 	unsigned char tempX  = PINA & 0x01;
 	unsigned char tempA7 = PINA & 0x80;
-
+	
     switch(DLS_State) {   // Transitions
         case DLS_SMStart:  // Initial transition
 			DLS_State = LOCK_WAITN;
