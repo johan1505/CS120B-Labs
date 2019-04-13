@@ -7,7 +7,7 @@
 
 #include <avr/io.h>
 
-enum IDC_States { IDC_SMStart, INIT, INCREMENT, DECREMENT, WAIT, RESET  } IDC_State;
+enum IDC_States { IDC_SMStart, INIT, INC, PRESS_INC,  DEC, PRESS_DEC, WAIT, RESET  } IDC_State;
 
 void TickFct_Latch()
 {
@@ -20,10 +20,10 @@ void TickFct_Latch()
 
 		case INIT:
 			if (tempA0 && !tempA1) {
-				IDC_State = INCREMENT;
+				IDC_State = INC;
 			}
 			else if (tempA1 && !tempA0) {
-				IDC_State = DECREMENT;
+				IDC_State = DEC;
 			}
 			else if (tempA0 && tempA1){
 				IDC_State = RESET;
@@ -32,21 +32,55 @@ void TickFct_Latch()
 				IDC_State = INIT;
 			}
 			break;
-
-		case INCREMENT:
-			IDC_State = WAIT;
+				
+		case INC:
+			if (tempA0){
+				IDC_State = PRESS_INC;
+			}
+			else if (!tempA0){
+				IDC_State = WAIT;
+			}
 			break;
 			
-		case DECREMENT:
-			IDC_State = WAIT;
+		case PRESS_INC:
+			if (tempA0 && !tempA1){
+				IDC_State = PRESS_INC;
+			}
+			else if (tempA0 && tempA1){
+				IDC_State = RESET;
+			}
+			else if (!tempA0){
+				IDC_State = WAIT;
+			}
+			break;
+			
+		case DEC:
+			if (tempA1){
+				IDC_State = PRESS_DEC;
+			}
+			else if (!tempA1){
+				IDC_State = WAIT;
+			}
+			break;
+			
+		case PRESS_DEC:
+			if (tempA1 && !tempA0){
+				IDC_State = PRESS_DEC;
+			}
+			else if (tempA0 && tempA1){
+				IDC_State = RESET;
+			}
+			else if (!tempA1){
+				IDC_State = WAIT;
+			}
 			break;
 			
 		case WAIT:
 			if (tempA0 && !tempA1 && (PORTC < 9)){
-				IDC_State = INCREMENT;	
+				IDC_State = INC;	
 			}
 			else if (tempA1 && !tempA0 && (PORTC > 0)){
-				IDC_State = DECREMENT;	
+				IDC_State = DEC;	
 			}
 			else if (tempA0 && tempA1){
 				IDC_State = RESET;
@@ -70,14 +104,20 @@ void TickFct_Latch()
 			PORTC = 0x07;
 			break;
 
-		case INCREMENT:
+		case INC:
 			PORTC = PORTC + 1;
 			break;
-		
-		case DECREMENT:
+			
+		case PRESS_INC:
+			break;
+			
+		case DEC:
 			PORTC = PORTC - 1;
 			break;
 		
+		case PRESS_DEC:
+			break;
+			
 		case WAIT:
 			break;
 			
@@ -86,7 +126,7 @@ void TickFct_Latch()
 			break;
 			
 		default:
-		break;
+			break;
 	} // State actions
 }
 
