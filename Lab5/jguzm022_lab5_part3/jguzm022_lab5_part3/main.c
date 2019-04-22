@@ -1,17 +1,22 @@
-/*
- * jguzm022_lab5_part3.c
- *
- * Created: 4/16/2019 11:37:24 AM
- * Author : joan1
- */ 
+/*	Partner 1 Name & E-mail: Johan Guzman Avalos - jguzm022@ucr.edu
+ *	Partner 2 Name & E-mail: Adrian De La Torre  - adel037@ucr.edu
+ *	Lab Section: 25
+ *	Assignment: Lab 5  Exercise 3 
+ *	
+ *	I acknowledge all content contained herein, excluding template or example
+ *	code, is my own original work.
+ */
+
 
 #include <avr/io.h>
+#define b PINA & 0x01
 
 unsigned char led = 0x00;
+//unsigned char b = 0x00;
 enum Lights_States { Lights_SMStart,  START, LIGHTS_LEFT, PRESS1, WAIT1, LIGHTS_RIGHT, PRESS2, WAIT2, PRESS3, WAIT3} Lights_State;
 void TickFct_Latch()
 {
-	unsigned char b = ~PINA & 0x01; // CHANGE
+//	b = PINA & 0x01; // CHANGE
 	switch(Lights_State) // transitions
 	{
 		case  Lights_SMStart:
@@ -159,6 +164,7 @@ int main(void)
     /* Replace with your application code */
 	DDRA = 0x00; PORTA = 0xFF;
 	DDRB = 0xFF; PORTB = 0x00;
+	Lights_State = Lights_SMStart;
     while (1) 
     {
 		TickFct_Latch();
