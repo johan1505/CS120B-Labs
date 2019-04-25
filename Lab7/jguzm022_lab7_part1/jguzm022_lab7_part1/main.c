@@ -1,13 +1,12 @@
-/*	Partner 1 Name & E-mail: Johan Guzman Avalos - jguzm022@ucr.edu
- *	Partner 2 Name & E-mail: Adrian De La Torre  - adel037@ucr.edu
- *	Lab Section: 25
- *	Assignment: Lab 6 Exercise 2 
- *	
- *	I acknowledge all content contained herein, excluding template or example
- *	code, is my own original work.
- */
+/*
+ * jguzm022_lab7_part1.c
+ *
+ * Created: 4/24/2019 8:40:22 PM
+ * Author : joan1
+ */ 
 
 #include <avr/io.h>
+#include "io.c"
 #include <avr/interrupt.h>
 
 volatile unsigned char TimerFlag = 0; // TimerISR() sets this to 1. C programmer should clear to 0.
@@ -66,109 +65,111 @@ void TimerSet(unsigned long M) {
 	_avr_timer_cntcurr = _avr_timer_M;
 }
 
-enum LED_States {LED_Start, START, ON1, ON2, ON3, PRESSB, WAIT} LED_State;
-enum directions {LEFT, RIGHT} direc;
-unsigned char b = 0x00;
+
+enum ScreenStates {STATE_Start, INIT, INC, DEC, WAIT} ScreenState;
+unsigned char b1 = 0x00;
+unsigned char b0 = 0x00;
+unsigned char number = 0x00;
+
 void tick(){
-	b = ~PINA & 0x01;
-	switch (LED_State){
-		case LED_Start:
-			LED_State = START;
+	switch(ScreenState){
+		b0 = ~PINA & 0x01;
+		b1 = ~PINA & 0x02;
+		case STATE_Start:
+			ScreenState = INIT;
 			break;
-		case START:
-			LED_State = ON1;
-			break;
-		case ON1:
-			if (b){
-				LED_State = PRESSB;
+		
+		case INIT:
+			if ((!b0 && !b1) || (b0 && b1)) {
+				ScreenState = INIT;
+			}
+			else if (b0 && !b1){
+				ScreenState = INC;
 			}
 			else {
-				LED_State = ON2;
+				ScreenState = DEC;
 			}
 			break;
-		case ON2:
-			if (b){
-				LED_State = PRESSB;
+			
+		case INC:
+			if (b0 && b1) {
+				ScreenState = INIT;
 			}
-			else if (direc == LEFT && !b) {
-				LED_State = ON3;
-			}
-			else if (direc == RIGHT && !b){
-				LED_State = ON1;	
-			}
-			break;
-		case ON3:
-			if (b){
-				LED_State = PRESSB;
+			else if (b0 && !b1 && number < 9) {
+				ScreenState = INC;	
 			}
 			else {
-				LED_State = ON2;
+				ScreenState = WAIT; // MAY CAUSE ERRORS
 			}
 			break;
-		case PRESSB:
-			if (b){
-				LED_State = PRESSB;
+			
+		case DEC:
+			if (b0 && b1) {
+				ScreenState = INIT;
+			}
+			else if (!b0 && b1 && number != 0) {
+				ScreenState = DEC;
 			}
 			else {
-				LED_State = WAIT;
+				ScreenState = WAIT;
 			}
 			break;
+			
 		case WAIT:
-			if (!b) {
-				LED_State = WAIT;
+			if (b0 && !b1 && number < 9) {
+				ScreenState = INC;
 			}
-			else if (PORTB == 0x02 && direc == RIGHT && b){
-				LED_State = ON1;
+			else if (b1 && !b0 && number > 0) {
+				ScreenState = DEC;
 			}
-			else if (PORTB == 0x02 && direc == LEFT && b){
-				LED_State = ON3;
+			else if ((!b0 && !b1) || (b0 && !b1 && number >= 9) || (b1 && !b0 && number == 0)) {
+				ScreenState = WAIT;	
 			}
 			else {
-				LED_State = ON1; // errors??
+				ScreenState = INIT;
 			}
 			break;
 	}
 	
-	switch (LED_State){
-		case LED_Start:
+	switch (ScreenState){
+		case STATE_Start:
 			break;
-		case START:
-			PORTB = 0x00;
-			direc = LEFT;
+		
+		case INIT:
+			number = 0;
+			LCD_WriteData(number + '0');
 			break;
-		case ON1:
-			PORTB = 0x01;
-			direc = LEFT;
+			
+		case INC:
+			++number;
+			LCD_WriteData(number + '0');	
 			break;
-		case ON2:
-			PORTB = 0x02;
+			
+		case DEC:
+			--number;
+			LCD_WriteData(number + '0');
 			break;
-		case ON3:
-			PORTB = 0x04;
-			direc = RIGHT;
-			break;
-		case PRESSB:
-			break;
-		case WAIT: 
-			break;
-		default:
+		
+		case WAIT:
 			break;
 	}
 }
 
 int main()
 {
-	DDRB = 0xFF; PORTB = 0x00;
+    /* Replace with your application code */
 	DDRA = 0x00; PORTA = 0xFF;
-    LED_State = LED_Start;
-	TimerSet(300);
+	DDRC = 0xFF; PORTC = 0x00;
+	DDRD = 0xFF; PORTD = 0x00;
+	ScreenState = STATE_Start;
+	TimerSet(1000);
 	TimerOn();
+	LCD_init();
     while (1) 
     {
 		tick();
-		while(!TimerFlag);
-		TimerFlag = 0;
+		while (!TimerFlag);
+		TimerFlag = 0;	
     }
 }
-
 

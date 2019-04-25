@@ -1,14 +1,13 @@
-/*	Partner 1 Name & E-mail: Johan Guzman Avalos - jguzm022@ucr.edu
- *	Partner 2 Name & E-mail: Adrian De La Torre  - adel037@ucr.edu
- *	Lab Section: 25
- *	Assignment: Lab 6 Exercise 2 
- *	
- *	I acknowledge all content contained herein, excluding template or example
- *	code, is my own original work.
- */
+/*
+ * jguzm022_lab7_part2.c
+ *
+ * Created: 4/24/2019 9:57:44 PM
+ * Author : joan1
+ */ 
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include "io.c"
 
 volatile unsigned char TimerFlag = 0; // TimerISR() sets this to 1. C programmer should clear to 0.
 
@@ -66,18 +65,21 @@ void TimerSet(unsigned long M) {
 	_avr_timer_cntcurr = _avr_timer_M;
 }
 
-enum LED_States {LED_Start, START, ON1, ON2, ON3, PRESSB, WAIT} LED_State;
+enum LED_States {LED_Start, START, ON1, ON2, ON3, PRESSB, WAIT, VICTORY} LED_State;
 enum directions {LEFT, RIGHT} direc;
 unsigned char b = 0x00;
+unsigned char score = 0x00;
 void tick(){
 	b = ~PINA & 0x01;
 	switch (LED_State){
 		case LED_Start:
 			LED_State = START;
 			break;
+		
 		case START:
 			LED_State = ON1;
 			break;
+		
 		case ON1:
 			if (b){
 				LED_State = PRESSB;
@@ -86,17 +88,19 @@ void tick(){
 				LED_State = ON2;
 			}
 			break;
+		
 		case ON2:
-			if (b){
-				LED_State = PRESSB;
-			}
-			else if (direc == LEFT && !b) {
+			if (direc == LEFT && !b) {
 				LED_State = ON3;
 			}
 			else if (direc == RIGHT && !b){
-				LED_State = ON1;	
+				LED_State = ON1;
+			}
+			else {
+				LED_State = PRESSB;
 			}
 			break;
+		
 		case ON3:
 			if (b){
 				LED_State = PRESSB;
@@ -105,52 +109,96 @@ void tick(){
 				LED_State = ON2;
 			}
 			break;
+		
 		case PRESSB:
 			if (b){
 				LED_State = PRESSB;
 			}
-			else {
+			else if (!b && score < 9) {
 				LED_State = WAIT;
 			}
+			else {
+				LED_State = VICTORY;
+			}
 			break;
+		
 		case WAIT:
 			if (!b) {
 				LED_State = WAIT;
 			}
 			else if (PORTB == 0x02 && direc == RIGHT && b){
 				LED_State = ON1;
+				++score;
+				LCD_WriteData(score + '0');
 			}
 			else if (PORTB == 0x02 && direc == LEFT && b){
 				LED_State = ON3;
+				++score;
+				LCD_WriteData(score + '0');
 			}
 			else {
 				LED_State = ON1; // errors??
+				if (score){
+					--score;
+					LCD_WriteData(score + '0');
+				}
+				else {
+					LCD_WriteData(score + '0');
+				}
 			}
+			break;
+		
+		case VICTORY:
+			if (!b) {
+				LED_State = VICTORY;
+			}
+			else {
+				LED_State = START;
+			}
+			break;
+		
+		default:
+			LED_State = LED_Start;
 			break;
 	}
 	
 	switch (LED_State){
 		case LED_Start:
 			break;
+			
 		case START:
 			PORTB = 0x00;
+			score = 5;
+			LCD_WriteData(score + '0');
 			direc = LEFT;
 			break;
+			
 		case ON1:
 			PORTB = 0x01;
 			direc = LEFT;
 			break;
+			
 		case ON2:
 			PORTB = 0x02;
 			break;
+			
 		case ON3:
 			PORTB = 0x04;
 			direc = RIGHT;
 			break;
+			
 		case PRESSB:
 			break;
-		case WAIT: 
+			
+		case WAIT:
 			break;
+		
+		case VICTORY:
+			LCD_DisplayString(1, "VICTORY");
+			PORTB = score % 2 ? 1 : 0;
+			++score;
+			break;
+			
 		default:
 			break;
 	}
@@ -160,15 +208,17 @@ int main()
 {
 	DDRB = 0xFF; PORTB = 0x00;
 	DDRA = 0x00; PORTA = 0xFF;
-    LED_State = LED_Start;
+	DDRC = 0xFF; PORTC = 0x00;
+	DDRD = 0xFF; PORTD = 0x00;
+	LED_State = LED_Start;
 	TimerSet(300);
 	TimerOn();
-    while (1) 
-    {
+	LCD_init();
+	while (1)
+	{
 		tick();
 		while(!TimerFlag);
 		TimerFlag = 0;
-    }
+	}
 }
-
 

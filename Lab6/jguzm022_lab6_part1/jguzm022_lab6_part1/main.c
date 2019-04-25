@@ -1,9 +1,12 @@
-/*
- * jguzm022_lab4_part1.c
- *
- * Created: 4/22/2019 12:59:15 PM
- * Author : joan1
- */ 
+/*	Partner 1 Name & E-mail: Johan Guzman Avalos - jguzm022@ucr.edu
+ *	Partner 2 Name & E-mail: Adrian De La Torre  - adel037@ucr.edu
+ *	Lab Section: 25
+ *	Assignment: Lab 6  Exercise 1 
+ *	
+ *	I acknowledge all content contained herein, excluding template or example
+ *	code, is my own original work.
+ */
+
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
