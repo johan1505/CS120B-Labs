@@ -83,6 +83,24 @@ void tick(){
 		case ON1:
 			if (b){
 				LED_State = PRESSB;
+				if (PORTB == 0x02 && score < 9){
+					//LCD_ClearScreen();
+					LCD_Cursor(1);
+					++score;
+					LCD_WriteData(score + '0');
+				}
+				else if (PORTB != 0x02 && score > 0){
+					//LCD_ClearScreen();
+					LCD_Cursor(1);
+					--score;
+					LCD_WriteData(score + '0');
+				}
+				else {
+					//LCD_ClearScreen();
+					LCD_Cursor(1);
+					LCD_WriteData(score + '0');
+				}
+	
 			}
 			else {
 				LED_State = ON2;
@@ -98,12 +116,46 @@ void tick(){
 			}
 			else {
 				LED_State = PRESSB;
+				if (PORTB == 0x02 && score < 9){
+					//LCD_ClearScreen();
+					LCD_Cursor(1);
+					++score;
+					LCD_WriteData(score + '0');
+				}
+				else if (PORTB != 0x02 && score > 0){
+					//LCD_ClearScreen();
+					LCD_Cursor(1);
+					--score;
+					LCD_WriteData(score + '0');
+				}
+				else {
+					//LCD_ClearScreen();
+					LCD_Cursor(1);
+					LCD_WriteData(score + '0');
+				}
 			}
 			break;
 		
 		case ON3:
 			if (b){
 				LED_State = PRESSB;
+				if (PORTB == 0x02 && score < 9){
+					//LCD_ClearScreen();
+					LCD_Cursor(1);
+					++score;
+					LCD_WriteData(score + '0');
+				}
+				else if (PORTB != 0x02 && score > 0){
+					//LCD_ClearScreen();
+					LCD_Cursor(1);
+					--score;
+					LCD_WriteData(score + '0');
+				}
+				else {
+					//LCD_ClearScreen();
+					LCD_Cursor(1);
+					LCD_WriteData(score + '0');
+				}
 			}
 			else {
 				LED_State = ON2;
@@ -128,23 +180,12 @@ void tick(){
 			}
 			else if (PORTB == 0x02 && direc == RIGHT && b){
 				LED_State = ON1;
-				++score;
-				LCD_WriteData(score + '0');
 			}
 			else if (PORTB == 0x02 && direc == LEFT && b){
 				LED_State = ON3;
-				++score;
-				LCD_WriteData(score + '0');
 			}
 			else {
 				LED_State = ON1; // errors??
-				if (score){
-					--score;
-					LCD_WriteData(score + '0');
-				}
-				else {
-					LCD_WriteData(score + '0');
-				}
 			}
 			break;
 		
@@ -153,6 +194,8 @@ void tick(){
 				LED_State = VICTORY;
 			}
 			else {
+				LCD_ClearScreen();
+				LCD_Cursor(1);
 				LED_State = START;
 			}
 			break;
