@@ -1,9 +1,12 @@
-/*
- * jguzm022_lab7_part2.c
- *
- * Created: 4/24/2019 9:57:44 PM
- * Author : joan1
- */ 
+/*	Partner 1 Name & E-mail: Johan Guzman Avalos - jguzm022@ucr.edu
+ *	Partner 2 Name & E-mail: Adrian De La Torre  - adel037@ucr.edu
+ *	Lab Section: 25
+ *	Assignment: Lab 7  Exercise 2
+ *	
+ *	I acknowledge all content contained herein, excluding template or example
+ *	code, is my own original work.
+ */
+
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -84,19 +87,16 @@ void tick(){
 			if (b){
 				LED_State = PRESSB;
 				if (PORTB == 0x02 && score < 9){
-					//LCD_ClearScreen();
 					LCD_Cursor(1);
 					++score;
 					LCD_WriteData(score + '0');
 				}
 				else if (PORTB != 0x02 && score > 0){
-					//LCD_ClearScreen();
 					LCD_Cursor(1);
 					--score;
 					LCD_WriteData(score + '0');
 				}
 				else {
-					//LCD_ClearScreen();
 					LCD_Cursor(1);
 					LCD_WriteData(score + '0');
 				}
@@ -117,19 +117,16 @@ void tick(){
 			else {
 				LED_State = PRESSB;
 				if (PORTB == 0x02 && score < 9){
-					//LCD_ClearScreen();
 					LCD_Cursor(1);
 					++score;
 					LCD_WriteData(score + '0');
 				}
 				else if (PORTB != 0x02 && score > 0){
-					//LCD_ClearScreen();
 					LCD_Cursor(1);
 					--score;
 					LCD_WriteData(score + '0');
 				}
 				else {
-					//LCD_ClearScreen();
 					LCD_Cursor(1);
 					LCD_WriteData(score + '0');
 				}
@@ -140,19 +137,16 @@ void tick(){
 			if (b){
 				LED_State = PRESSB;
 				if (PORTB == 0x02 && score < 9){
-					//LCD_ClearScreen();
 					LCD_Cursor(1);
 					++score;
 					LCD_WriteData(score + '0');
 				}
 				else if (PORTB != 0x02 && score > 0){
-					//LCD_ClearScreen();
 					LCD_Cursor(1);
 					--score;
 					LCD_WriteData(score + '0');
 				}
 				else {
-					//LCD_ClearScreen();
 					LCD_Cursor(1);
 					LCD_WriteData(score + '0');
 				}
@@ -163,13 +157,13 @@ void tick(){
 			break;
 		
 		case PRESSB:
-			if (b){
+			if (b  && score < 9){
 				LED_State = PRESSB;
 			}
 			else if (!b && score < 9) {
 				LED_State = WAIT;
 			}
-			else {
+			else if ((b || !b) && score == 9){
 				LED_State = VICTORY;
 			}
 			break;
@@ -238,8 +232,8 @@ void tick(){
 		
 		case VICTORY:
 			LCD_DisplayString(1, "VICTORY");
-			PORTB = score % 2 ? 1 : 0;
-			++score;
+			PORTB = score % 2 ? 0x07 : 0;
+			score++;
 			break;
 			
 		default:

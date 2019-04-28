@@ -1,9 +1,12 @@
-/*
- * jguzm022_lab7_part1.c
- *
- * Created: 4/24/2019 8:40:22 PM
- * Author : joan1
- */ 
+/*	Partner 1 Name & E-mail: Johan Guzman Avalos - jguzm022@ucr.edu
+ *	Partner 2 Name & E-mail: Adrian De La Torre  - adel037@ucr.edu
+ *	Lab Section: 25
+ *	Assignment: Lab 7  Exercise 1 
+ *	
+ *	I acknowledge all content contained herein, excluding template or example
+ *	code, is my own original work.
+ */
+
 
 #include <avr/io.h>
 #include "io.c"
@@ -69,25 +72,23 @@ void TimerSet(unsigned long M) {
 enum ScreenStates {STATE_Start, INIT, INC, DEC, WAIT} ScreenState;
 unsigned char b1 = 0x00;
 unsigned char b0 = 0x00;
-unsigned char number = 0x00;
+unsigned char number = 0;
 
 void tick(){
+	b0 = ~PINA & 0x01;
+	b1 = ~PINA & 0x02;
 	switch(ScreenState){
-		b0 = ~PINA & 0x01;
-		b1 = ~PINA & 0x02;
 		case STATE_Start:
 			ScreenState = INIT;
+			number = 0;
 			break;
 		
 		case INIT:
-			if ((!b0 && !b1) || (b0 && b1)) {
+			if ((!b0 && !b1) || (b0 && b1) || (b1)) {
 				ScreenState = INIT;
 			}
-			else if (b0 && !b1){
-				ScreenState = INC;
-			}
 			else {
-				ScreenState = DEC;
+				ScreenState = INC;
 			}
 			break;
 			
@@ -98,8 +99,8 @@ void tick(){
 			else if (b0 && !b1 && number < 9) {
 				ScreenState = INC;	
 			}
-			else {
-				ScreenState = WAIT; // MAY CAUSE ERRORS
+			else{
+				ScreenState = WAIT;
 			}
 			break;
 			
@@ -107,10 +108,10 @@ void tick(){
 			if (b0 && b1) {
 				ScreenState = INIT;
 			}
-			else if (!b0 && b1 && number != 0) {
+			else if (!b0 && b1 && number > 0) {
 				ScreenState = DEC;
 			}
-			else {
+			else{
 				ScreenState = WAIT;
 			}
 			break;
@@ -137,16 +138,19 @@ void tick(){
 		
 		case INIT:
 			number = 0;
+			LCD_Cursor(1);
 			LCD_WriteData(number + '0');
 			break;
 			
 		case INC:
 			++number;
+			LCD_Cursor(1);
 			LCD_WriteData(number + '0');	
 			break;
 			
 		case DEC:
 			--number;
+			LCD_Cursor(1);
 			LCD_WriteData(number + '0');
 			break;
 		
@@ -172,4 +176,3 @@ int main()
 		TimerFlag = 0;	
     }
 }
-
