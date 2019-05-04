@@ -45,7 +45,7 @@ void PWM_off() {
 }
 
 
-enum states {WAIT, PRESSA0, PRESSA1, PRESSA2}state;
+enum states {WAIT, PRESSA0, PRESSA1, PRESSA2} state;
 unsigned char button = 0x00;
 
 void tick(){

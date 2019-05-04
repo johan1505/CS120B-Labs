@@ -19,6 +19,7 @@ unsigned char tracker;
 unsigned char b0 = 0, b1 = 0,b2 = 0;
 enum states { stateStart, WAIT, PRESSA0, OUTPUT_SOUND, PRESSA1, PRESSA2} state;
 volatile unsigned char TimerFlag = 0; // TimerISR() sets this to 1. C programmer should clear to 0.
+
 // Internal variables for mapping AVR's ISR to our cleaner TimerISR model.
 unsigned long _avr_timer_M = 1; // Start count from here, down to 0. Default 1 ms.
 unsigned long _avr_timer_cntcurr = 0; // Current internal count of 1ms ticks
@@ -73,6 +74,7 @@ void TimerSet(unsigned long M) {
 	_avr_timer_cntcurr = _avr_timer_M;
 }
 
+
 void set_PWM(double frequency) {
 	static double current_frequency; // Keeps track of the currently set frequency
 	// Will only update the registers when the frequency changes, otherwise allows
@@ -118,7 +120,7 @@ void tick(){
 		case stateStart:
 			state = WAIT;
 			tracker = 0;
-			PWM_off();
+			set_PWM(0);
 			break;
 			
 		case WAIT:
@@ -126,7 +128,6 @@ void tick(){
 				state = WAIT;
 			}
 			else if (b0 && !b1 && !b2){
-				PWM_on();
 				state = PRESSA0;
 				tracker = 0;
 				set_PWM(C4);
@@ -150,7 +151,8 @@ void tick(){
 			}
 			else if (b0 && !b1 && !b2){
 				state = WAIT;
-				PWM_off();
+			    set_PWM(0);
+
 			}
 			else if (!b0 && b1 && !b2){
 				state = PRESSA1;
@@ -246,19 +248,19 @@ void tick(){
 	}
 }
 int main(void)
-{
+{;
     /* Replace with your application code */
 	DDRB = 0xFF; PORTB = 0x00;
 	DDRA = 0x00; PORTA = 0xFF;
-	state = stateStart;
-//	PWM_on();
-	TimerSet(1000);
+	TimerSet(250);
 	TimerOn();
+	PWM_on();
     while (1) 
     {
 		tick();
 		while(!TimerFlag);
 		TimerFlag = 0;
     }
+
 }
 
