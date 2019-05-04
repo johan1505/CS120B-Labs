@@ -1,10 +1,11 @@
-/*
- * jguzm022_lab9_part1.c
- *
- * Created: 5/1/2019 7:58:45 AM
- * Author : joan1
- */ 
-
+/*	Partner 1 Name & E-mail: Johan Guzman Avalos - jguzm022@ucr.edu
+ *	Partner 2 Name & E-mail: Adrian De La Torre  - adel037@ucr.edu
+ *	Lab Section: 25
+ *	Assignment: Lab 9  Exercise 2 
+ *	
+ *	I acknowledge all content contained herein, excluding template or example
+ *	code, is my own original work.
+ */
 #include <avr/io.h>
 #include <avr/interrupt.h>
 const double C4 = 261.63;

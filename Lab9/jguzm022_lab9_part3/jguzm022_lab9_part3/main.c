@@ -1,9 +1,11 @@
-/*
- * jguzm022_lab9_part3.c
- *
- * Created: 5/3/2019 10:55:58 PM
- * Author : joan1
- */ 
+/*	Partner 1 Name & E-mail: Johan Guzman Avalos - jguzm022@ucr.edu
+ *	Partner 2 Name & E-mail: Adrian De La Torre  - adel037@ucr.edu
+ *	Lab Section: 25
+ *	Assignment: Lab 9  Exercise 3 
+ *	
+ *	I acknowledge all content contained herein, excluding template or example
+ *	code, is my own original work.
+ */
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -103,11 +105,12 @@ void PWM_off() {
 	TCCR0A = 0x00;
 	TCCR0B = 0x00;
 }
-
-const double notes[14] = {146.83, 146.83, 146.83, 146.83, 146.83, 146.83, 146.83, 146.83, 155.56, 155.56, 155.56, 155.56, 155.56, 164.81};
-const double timeUp[14] = {7, 1, 1, 4, 1, 1, 1, 1, 1, 1, 4, 1, 1, 4 };
-const double timeDown[14] = {7, 1, 1, 5, 1, 1, 1, 1, 1, 1, 5, 1, 1, 4};
-enum states{OFF, PLAY, TIMEDOWN}state;
+#define SIZE 43
+																                                                                        //                                                                                                                                                                                                                               //                                                                             //
+const double notes[SIZE] = {146.83, 146.83, 146.83, 146.83, 146.83, 146.83, 146.83, 146.83, 155.56, 155.56, 155.56, 155.56, 155.56, 164.81, 164.81, 164.81, 164.81, 164.81, 174.61, 174.61, 174.61, 174.61, 174.61, 164.81, 164.81, 164.81, 164.81, 164.81, 155.56, 155.56, 155.56, 155.56, 155.56, 261.63};// 146.83, 146.83, 146.83, 146.83, 146.83, 146.83, 146.83, 146.83, 146.83, 146.83, 155.56, 155.56, 155.56, 155.56, 155.56, 164.81, 164.81, 164.81, 164.81, 164.81, 174.61, 174.61, 174.61, 174.61, 174.61, 164.81, 164.81, 164.81, 164.81, 164.81, 155.56, 155.56, 155.56, 155.56, 155.56, 261.63 };
+const double timeUp[SIZE]   = {7, 1, 1, 4, 1, 1, 1, 1, 1, 1, 4, 1, 1, 4, 1, 1, 1, 1, 1, 1, 4, 1, 1, 4, 1, 1, 1, 1, 1, 1, 4, 1, 4, 4, 1, 1, 4, 1, 1, 4, 1, 1, 1};//,1, 1, 1, 4, 1, 1, 4, 1, 1, 1, 1, 1, 1, 4, 1, 1, 4, 1, 1, 1, 1, 1, 1, 4, 1, 4, 8};
+const double timeDown[SIZE] = {7, 1, 1, 4, 1, 1, 1, 1, 1, 1, 4, 1, 1, 4, 1, 1, 1, 1, 1, 1, 4, 1, 1, 4, 1, 1, 1, 1, 1, 1, 4, 1, 4, 4, 1, 1, 4, 1, 1, 4, 1, 1, 1};// 1, 1, 1, 4, 1, 1, 4, 1, 1, 1, 1, 1, 1, 4, 1, 1, 4, 1, 1, 1, 1, 1, 1, 4, 1, 4, 8};
+enum states{OFF, PLAY, TIMEDOWN, PRESS}state;                                                                                          //
 unsigned char cntr;
 unsigned char i;
 unsigned char b;
@@ -119,15 +122,18 @@ void tick(){
 			break;
 		
 		case PLAY:
-			if (cntr <= timeUp[i] && i < 13){
+			if (cntr <= timeUp[i] && i < SIZE){
 				state = PLAY;
 			}
-			else if (cntr > timeUp[i] && i < 13){
+			else if (cntr > timeUp[i] && i < SIZE){
 				state = TIMEDOWN;
 				cntr = 0;
 			}
-			else {
+			else if (cntr > timeUp[i] && i >= SIZE && !b){
 				state = OFF;
+			}
+			else {// if (cntr > timeUp[i] && i >= SIZE && b){
+				state = PRESS;
 			}
 			break;
 		
@@ -142,6 +148,9 @@ void tick(){
 			}
 			break;
 			
+		case PRESS:
+			state = b ? PRESS : OFF;
+			break;
 		default:
 			state = OFF;
 			break;
@@ -163,6 +172,9 @@ void tick(){
 			set_PWM(0);
 			cntr++;
 			break;
+		
+		case PRESS:
+			break;
 			
 		default:
 			break;
@@ -174,7 +186,7 @@ int main(void)
 	//T = 167s
 	DDRB = 0xFF; PORTB = 0x00;
 	DDRA = 0x00; PORTA = 0xFF;
-	TimerSet(33);
+	TimerSet(34);
 	TimerOn();
 	PWM_on();
     while (1) 
