@@ -10,7 +10,7 @@
 
 int main(void)
 {
-	DDRC = 0xFF; PORTC = 0x00; // LCD data lines
+	DDRA = 0xFF; PORTA = 0x00; // LCD data lines
 	DDRD = 0xFF; PORTD = 0x00; // LCD control lines
 	
 	// Initializes the LCD display
