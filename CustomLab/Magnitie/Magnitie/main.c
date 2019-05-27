@@ -2,44 +2,51 @@
 #include <avr/interrupt.h>
 #include <bit.h>
 #include <timer.h>
-#include <keypad.h>
 #include <stdio.h>
 #include <scheduler.h>
 #include <ADC.h>
 #include "io.c"
 
 //Global Variable
-unsigned char MetalDetected ;
+unsigned char MetalDetected;
+unsigned char buttonPressed;
 
 //SM1
 enum DetectMetalStates {DetectMetalStart, WaitForMetal, MetalSignal} DetectMetalState;
 int DetectMetalTick(int state);
 
 //SM2
-enum LCDStates {LCDInit, SadFace, HappyFace} LCDstate;
+enum LCDStates {LCDStart, LCDWaitForButon, SadFace, HappyFace} LCDstate;
 int LCDTick(int state);
 void InitCustomCharacters(); //Helper
 
+//SM3
+enum ButtonStates {ButtonStart, WaitForButton, SendButtonSignal} ButtonState;
+int ButtonTick(int state);
+
 int main(void)
 {
-	DDRA = 0x00; PORTA = 0xFF; // Set up sensor input
+	DDRA = 0x00; PORTA = 0xFF; // Set up sensor input and button input
 	DDRB = 0xFF; PORTB = 0x00; // Output for the LEDS/ mainly for testing purposes
 	DDRC = 0xFF; PORTC = 0x00; // LCD data lines
 	DDRD = 0xFF; PORTD = 0x00; // LCD control lines
 	
-	static task task1;
-	static task task2;
+	static task task1; //Detect Metal
+	static task task2; //LCD
+	static task task3; //Button
 	
 	// Period for the tasks
 	unsigned long int DetectMetalSMPeriod = 100;
 	unsigned long int LCDPeriod = 1000;
+	unsigned long int ButtonPeriod = 1000;
 
 	//Calculating GCD
-	unsigned long int taskPeriodGCD = findGCD(DetectMetalSMPeriod, LCDPeriod);
+	unsigned long int tempGCD = findGCD(DetectMetalSMPeriod, LCDPeriod);
+	unsigned long int taskPeriodGCD = findGCD(tempGCD, ButtonPeriod);
 	
 	//Set up of the array of tasks
-	task *tasks[] = {&task1, &task2};
-	unsigned char numTasks = 2;
+	task *tasks[] = {&task1, &task2, &task3};
+	unsigned char numTasks = 3;
 	
 	//task 1
 	task1.state = DetectMetalStart;
@@ -47,11 +54,17 @@ int main(void)
 	task1.elapsedTime = task1.period;
 	task1.TickFct = &DetectMetalTick;
 	
-	//task 2s
-	task2.state = LCDInit;
+	//task 22
+	task2.state = LCDStart;
 	task2.period = LCDPeriod;
 	task2.elapsedTime = task2.period;
 	task2.TickFct = &LCDTick;
+	
+	//task 3
+	task3.state = WaitForButton;
+	task3.period = ButtonPeriod;
+	task3.elapsedTime = task3.period;
+	task3.TickFct = &ButtonTick;
 	
 	LCD_init();
 	ADC_init();
@@ -90,7 +103,6 @@ int DetectMetalTick(int state){
 			break;
 		
 		case MetalSignal:	
-			//state = ADC <= threshHold ? MetalSignal : WaitForMetal;
 			if (i <= 10 || ADC <= threshHold ){    // Once a metal is detected, rise the metalDetected flag for 1 second so that the LEDSM can read it 
 				state = MetalSignal;
 			}
@@ -123,22 +135,33 @@ int DetectMetalTick(int state){
 	return state;
 }
 
-
 int LCDTick(int state){                   
 	static unsigned char i;
 	switch(state){
-		case LCDInit:
-			state = SadFace;
-			i = 0;
-			InitCustomCharacters();
+		case LCDStart:
+			LCD_DisplayString(1, "Press the button to start! :D"); //Display the start message
+			state = LCDWaitForButon;
 			break;
+		
+		case LCDWaitForButon:
+			if (buttonPressed){
+				state = SadFace;
+				i = 0;
+				LCD_DisplayString(1, "               "); //Display the start message
+				InitCustomCharacters(); // Initialize the sad face
+			}
+			else {
+				state = LCDWaitForButon;
+			}
+			break;
+			
 	
 		case SadFace:
 			if (MetalDetected){
 				state = HappyFace;
-				LCD_Cursor(24);   // Display the happy mouth
+				LCD_Cursor(29);   // Display the happy mouth
 				LCD_WriteData(1);
-				LCD_Cursor(25);
+				LCD_Cursor(30);
 				LCD_WriteData(2);
 			}
 			else {
@@ -153,20 +176,23 @@ int LCDTick(int state){
 			else if (i > 5 && !MetalDetected){
 				state = SadFace;
 				i = 0;
-				LCD_Cursor(24);   // Display the sad mouth
+				LCD_Cursor(29);   // Display the sad mouth
 				LCD_WriteData(3);
-				LCD_Cursor(25);
+				LCD_Cursor(30);
 				LCD_WriteData(4);
 			}
 			break;
 			
 		default: 
-			state = LCDInit;
+			state = LCDStart;
 			break;
 	}
 	
 	switch(state){
-		case LCDInit:
+		case LCDStart:
+			break;
+			
+		case LCDWaitForButon:
 			break;
 			
 		case SadFace:
@@ -191,34 +217,84 @@ void InitCustomCharacters(){                    //================EYE===========
 	for (j = 0; j < 40; j++){
 		LCD_WriteData(customCharacters[j]);
 	}
+	
+	LCD_Cursor(1);   //Displays 'M' for metals found
+	LCD_WriteData(0x4D);
+	LCD_Cursor(2);   //Displays Semicolon
+	LCD_WriteData(0x3A);
+	
+	LCD_Cursor(17);  //Displays 'O' for how far is an obstacle at
+	LCD_WriteData(0x4F);
+	LCD_Cursor(18);   //Displays Semicolon
+	LCD_WriteData(0x3A);
+	
 	//Displaying White spaces of the face
-	LCD_Cursor(23);
+	LCD_Cursor(28);
 	LCD_WriteData(0xFF);
 	
-	LCD_Cursor(26);
+	LCD_Cursor(31);
 	LCD_WriteData(0xFF);
 	
-	LCD_Cursor(8);
+	LCD_Cursor(13);
 	LCD_WriteData(0xFF);
 	
-	LCD_Cursor(9);
+	LCD_Cursor(14);
 	LCD_WriteData(0xFF);
 	
 	//Displaying ears
-	LCD_Cursor(6);
+	LCD_Cursor(11);
 	LCD_WriteData(0xF1);
 	
-	LCD_Cursor(11);
+	LCD_Cursor(16);
 	LCD_WriteData(0xF0);
 	
 	//Displaying eyes
-	LCD_Cursor(7);
+	LCD_Cursor(12);
 	LCD_WriteData(0);
 	
-	LCD_Cursor(10);
+	LCD_Cursor(15);
 	LCD_WriteData(0);
-	LCD_Cursor(24);   // Display the sad mouth
+	
+	LCD_Cursor(29);   // Display the sad mouth
 	LCD_WriteData(3);
-	LCD_Cursor(25);
+	LCD_Cursor(30);
 	LCD_WriteData(4);
 }
+
+int ButtonTick(int state){
+	unsigned char b = ~PINA & 0x02;
+	switch(state){
+		case WaitForButton:
+			if (b){
+				state = SendButtonSignal;
+				buttonPressed = 1;
+			}
+			else {
+				state = WaitForButton;
+			}
+			break;
+		
+		case SendButtonSignal:
+			state = b ? SendButtonSignal : WaitForButton;
+			break;
+		
+		default:
+			state = WaitForButton;
+			break;
+	}
+	switch(state){
+		case WaitForButton:
+			buttonPressed = 0;
+			break;
+		
+		case SendButtonSignal:
+			buttonPressed = 1;
+			break;
+			
+		default:
+			break;
+		
+	}
+	return state;
+}
+	
